@@ -1,5 +1,7 @@
 from trading_agent import TradeAgent, MarketData
 from datetime import datetime
+from data_source import get_market_data
+import time
 
 def main():
     # Configuration
@@ -22,19 +24,24 @@ def main():
         api_key='your_openai_api_key'
     )
     
-    # Example market data
-    market_data = [
-        MarketData(100.0, 102.0, 99.0, 101.0, datetime.now()),
-        MarketData(101.0, 103.0, 100.5, 102.5, datetime.now()),
-        MarketData(102.5, 104.0, 102.0, 103.5, datetime.now()),
-    ]
-    
-    # Get prediction
-    prediction = agent.analyze_market_data(market_data)
-    
-    # Execute trade based on prediction
-    current_price = market_data[-1].close
-    agent.execute_trade(prediction, current_price)
+    while True:
+        try:
+            # Get market data from Binary.com
+            market_data = get_market_data()
+            
+            # Get prediction
+            prediction = agent.analyze_market_data(market_data)
+            
+            # Execute trade based on prediction
+            current_price = market_data[-1].close
+            agent.execute_trade(prediction, current_price)
+            
+            # Wait for 15 minutes before next analysis
+            time.sleep(900)  # 900 seconds = 15 minutes
+            
+        except Exception as e:
+            print(f"Error occurred: {str(e)}")
+            time.sleep(60)  # Wait a minute before retrying if there's an error
 
 if __name__ == "__main__":
     main() 
